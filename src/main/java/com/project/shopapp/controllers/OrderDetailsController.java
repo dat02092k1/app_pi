@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("{api.prefix}/order_details")
+@RequestMapping("${api.prefix}/order_details")
 public class OrderDetailsController {
     @PostMapping("")
     public ResponseEntity<?> createOrderDetail(
@@ -46,6 +46,12 @@ public class OrderDetailsController {
     ) {
         return ResponseEntity.ok("updateOrderDetails with id " + id + " " + orderDetailsDTO);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteOrderDetails(@Valid @PathVariable("id") Long id) {
+        return ResponseEntity.noContent().build();
+    }
+
 
 
 }
