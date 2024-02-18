@@ -11,7 +11,6 @@ import java.util.Date;
 @NoArgsConstructor
 @Setter
 @Getter
-@Builder
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
