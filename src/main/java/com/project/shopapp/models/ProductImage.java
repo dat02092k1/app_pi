@@ -11,7 +11,7 @@ import lombok.*;
 @Getter
 @Data
 @Builder
-public class ProductImages {
+public class ProductImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
