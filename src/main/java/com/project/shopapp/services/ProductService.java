@@ -10,6 +10,7 @@ import com.project.shopapp.models.ProductImage;
 import com.project.shopapp.repositories.CategoryRepository;
 import com.project.shopapp.repositories.ProductImageRepository;
 import com.project.shopapp.repositories.ProductRepository;
+import com.project.shopapp.responses.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,7 +20,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class ProductService implements IProductService{
+public class ProductService implements IProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
@@ -50,8 +51,22 @@ public class ProductService implements IProductService{
     }
 
     @Override
-    public Page<Product> getAllProducts(PageRequest pageRequest) {
-        return productRepository.findAll(pageRequest);
+    public Page<ProductResponse> getAllProducts(PageRequest pageRequest) {
+        return productRepository.findAll(pageRequest).map(
+                product -> {
+                    ProductResponse productResponse = ProductResponse.builder()
+                            .name(product.getName())
+                            .price(product.getPrice())
+                            .thumbnail(product.getThumbnail())
+                            .description(product.getDescription())
+                            .categoryId(product.getCategory().getId())
+                            .build();
+
+                    productResponse.setCreatedAt(product.getCreatedAt());
+                    productResponse.setUpdatedAt(product.getUpdatedAt());
+                    return productResponse;
+                }
+        );
     }
 
     @Override
@@ -75,7 +90,7 @@ public class ProductService implements IProductService{
             return productRepository.save(existingProduct);
         }
         return null;
-       }
+    }
 
     @Override
     public void deleteProduct(Long id) {
@@ -92,7 +107,7 @@ public class ProductService implements IProductService{
     @Override
     public ProductImage createProductImage(Long productId, ProductImageDTO productImageDTO) throws Exception {
         Product existingProduct = productRepository
-                .findById(productImageDTO.getProductId())
+                .findById(productId)
                 .orElseThrow(
                         () -> new DataNotFoundException("Can not find category with id: " + productImageDTO.getProductId())
                 );
@@ -106,7 +121,8 @@ public class ProductService implements IProductService{
         // not allow to save > 5 images for a product
         int size = productImageRepository.findByProductId(productId).size();
 
-        if (size >= 5) throw new InvalidParamException("Can not save more than 5 images for a product");
+        if (size >= ProductImage.MAXIMUM_IMAGES_PER_PRODUCT)
+            throw new InvalidParamException("Can not save more than 5 images for a product");
 
         return productImageRepository.save(newProductImage);
     }

@@ -4,10 +4,15 @@ import com.project.shopapp.dtos.ProductDTO;
 import com.project.shopapp.dtos.ProductImageDTO;
 import com.project.shopapp.models.Product;
 import com.project.shopapp.models.ProductImage;
+import com.project.shopapp.responses.ProductListResponse;
+import com.project.shopapp.responses.ProductResponse;
 import com.project.shopapp.services.IProductService;
 import jakarta.validation.Path;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +29,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @RestController
@@ -33,7 +39,11 @@ public class ProductController {
     private final IProductService productService;
 
     private String storeFile(MultipartFile file) throws IOException {
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        if (!isImage(file) || file.getOriginalFilename() == null) {
+            throw new IOException("Invalid file");
+        }
+
+        String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
         String uniqueName = UUID.randomUUID().toString() + "_" + fileName;
         java.nio.file.Path uploadDir = Paths.get("uploads");
 
@@ -45,6 +55,11 @@ public class ProductController {
 
         Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
         return uniqueName;
+    }
+
+    private boolean isImage(MultipartFile file) {
+        String contentType = file.getContentType();
+        return contentType != null && contentType.startsWith("image/");
     }
 
     @PostMapping(value = "")
@@ -78,6 +93,10 @@ public class ProductController {
             Product existingProduct = productService.getProductById(productId);
 
             files = files == null ? new ArrayList<MultipartFile>() : files;
+
+            if (files.size() > ProductImage.MAXIMUM_IMAGES_PER_PRODUCT) {
+                return ResponseEntity.badRequest().body("You can only upload up to 5 images");
+            }
 
             List<ProductImage> productImages = new ArrayList<>();
 
@@ -113,11 +132,22 @@ public class ProductController {
     }
 
     @GetMapping("")
-    public ResponseEntity<String> getProducts(
+    public ResponseEntity<ProductListResponse> getProducts(
             @RequestParam("page") int page,
             @RequestParam("limit") int limit
     ) {
-        return ResponseEntity.ok("Products");
+        PageRequest pageRequest = PageRequest.of(page, limit, Sort.by("createdAt").descending());
+
+        Page<ProductResponse> productsPage = productService.getAllProducts(pageRequest);
+
+        int totalPages = productsPage.getTotalPages();
+
+        List<ProductResponse> productResponses = productsPage.getContent();
+
+        return ResponseEntity.ok(ProductListResponse.builder()
+                .products(productResponses)
+                .totalPages(totalPages)
+                .build());
     }
 
     @GetMapping("/{id}")
