@@ -8,13 +8,17 @@ import com.project.shopapp.repositories.RoleRepository;
 import com.project.shopapp.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserService implements IUserService{
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public User createUser(UserDTO userDTO) throws DataNotFoundException {
@@ -47,15 +51,21 @@ public class UserService implements IUserService{
                 // check if exist accountId -> not require password
         if (userDTO.getFacebookAccountId() == 0 && userDTO.getGoogleAccountId() == 0) {
             String password = userDTO.getPassword();
-//            String encodedPassword = passwordEncoder.encode(password);
-//            newUser.setPassword(encodedPassword);
+            String encodedPassword = passwordEncoder.encode(password);
+            newUser.setPassword(encodedPassword);
         }
 
         return userRepository.save(newUser);
     }
 
     @Override
-    public String login(String phoneNumber, String password) {
-        return "";
+    public User login(String phoneNumber, String password) throws Exception {
+        Optional<User> optionalUser = userRepository.findByPhoneNumber(phoneNumber);
+
+        if (optionalUser.isEmpty()) {
+            throw new DataNotFoundException("Invalid phone number or password");
+        }
+
+        return optionalUser.get();
     }
 }
