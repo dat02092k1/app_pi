@@ -31,7 +31,7 @@ public class OrderDetail {
     private int numberOfProducts;
 
     @Column(name = "total_money", nullable = false)
-    private int totalMoney;
+    private Float totalMoney;
 
     @Column(name = "color")
     private String color;
