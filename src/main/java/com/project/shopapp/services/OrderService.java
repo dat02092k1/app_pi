@@ -9,6 +9,7 @@ import com.project.shopapp.repositories.OrderRepository;
 import com.project.shopapp.repositories.UserRepository;
 import com.project.shopapp.responses.OrderResponse;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.ast.Or;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -56,21 +57,53 @@ public class OrderService implements IOrderService{
 
     @Override
     public OrderResponse getOrder(Long id) {
+        Optional<Order> order = orderRepository.findById(id);
+        if (order.isPresent()) {
+            modelMapper.typeMap(Order.class, OrderResponse.class);
+            return modelMapper.map(order.get(), OrderResponse.class);
+        }
         return null;
     }
 
     @Override
-    public OrderResponse updateOrder(Long orderId, OrderDTO orderDTO) {
-        return null;
+    public OrderResponse updateOrder(Long orderId, OrderDTO orderDTO) throws DataNotFoundException {
+        Order existingOrder = orderRepository.findById(orderId)
+                .orElseThrow(() -> new DataNotFoundException("Order with id " + orderId + " not found"));
+
+        User existingUser = userRepository.findById(orderDTO.getUserId())
+                .orElseThrow(() -> new DataNotFoundException("User with id " + orderDTO.getUserId() + " not found"));
+
+        modelMapper.typeMap(OrderDTO.class, Order.class)
+                .addMappings(mapper -> mapper.skip(Order::setId));
+
+        modelMapper.map(orderDTO, existingOrder);
+
+        existingOrder.setUser(existingUser);
+
+        orderRepository.save(existingOrder);
+
+        modelMapper.typeMap(Order.class, OrderResponse.class);
+        return modelMapper.map(existingOrder, OrderResponse.class);
     }
 
     @Override
     public void deleteOrder(Long id) {
+        Order optionalOrder = orderRepository.findById(id).orElse(null);
+
+        if (optionalOrder != null) {
+            optionalOrder.setActive(false);
+            orderRepository.save(optionalOrder);
+        }
 
     }
 
     @Override
-    public List<OrderResponse> getAllOrders(Long userId) {
-        return null;
+    public List<OrderResponse> findByUserId(Long userId) {
+        List<Order> orders = orderRepository.findByUserId(userId);
+
+        modelMapper.typeMap(Order.class, OrderResponse.class);
+        return orders.stream()
+                .map(order -> modelMapper.map(order, OrderResponse.class))
+                .toList();
     }
 }

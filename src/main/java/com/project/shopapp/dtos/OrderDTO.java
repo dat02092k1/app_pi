@@ -21,6 +21,7 @@ public class OrderDTO {
     @JsonProperty("full_name")
     private String fullName;
 
+    @NotBlank(message = "Email is required")
     private String email;
 
     @JsonProperty("phone_number")

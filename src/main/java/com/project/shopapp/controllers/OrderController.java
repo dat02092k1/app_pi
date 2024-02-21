@@ -1,6 +1,7 @@
 package com.project.shopapp.controllers;
 
 import com.project.shopapp.dtos.OrderDTO;
+import com.project.shopapp.models.Order;
 import com.project.shopapp.responses.OrderResponse;
 import com.project.shopapp.services.IOrderService;
 import jakarta.validation.Valid;
@@ -40,10 +41,22 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/{user_id}")
-    public ResponseEntity<String> getOrders(@Valid @PathVariable("user_id") Long userId) {
+    @GetMapping("/users/{user_id}")
+    public ResponseEntity<?> getOrders(@Valid @PathVariable("user_id") Long userId) {
         try {
-            return ResponseEntity.ok("Orders by user " + userId);
+            List<OrderResponse> orders = orderService.findByUserId(userId);
+            return ResponseEntity.ok(orders);
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getOrder(@Valid @PathVariable("id") Long id) {
+        try {
+            OrderResponse orderResponse = orderService.getOrder(id);
+            return ResponseEntity.ok(orderResponse);
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -55,11 +68,18 @@ public class OrderController {
             @Valid @PathVariable("id") Long id,
             @Valid @RequestBody OrderDTO orderDTO
     ) {
-        return ResponseEntity.ok("Order updated");
+        try {
+            OrderResponse orderResponse = orderService.updateOrder(id, orderDTO);
+            return ResponseEntity.ok(orderResponse.toString());
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteOrder(@Valid @PathVariable("id") Long id) {
+        orderService.deleteOrder(id);
         return ResponseEntity.ok("Order deleted");
     }
 
