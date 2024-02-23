@@ -3,7 +3,7 @@ server:
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/shopapp?useSSL=false&serverTimezone=UTC
-    username: root
+    username: root  #root1 in xampp
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
     jpa:
@@ -20,3 +20,7 @@ spring:
         max-request-size: 10MB
 api:
   prefix: api/v1
+jwt:
+  expiration: 2592000
+  secretKey: sPIS1yea2FA2x0yJSF9sobByao4v64p9h1d1TBWK0AY=
+    # 30 days = 30 * 24 * 60 * 60
