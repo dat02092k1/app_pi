@@ -81,4 +81,7 @@ public class JwtTokenUtil {
         return expirationDate.before(new Date());
     }
 
+    public String extractPhoneNumber(String token) {
+        return this.extractClaim(token, Claims::getSubject);
+    }
 }
