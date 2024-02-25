@@ -35,7 +35,7 @@ public class UserController {
                 return ResponseEntity.badRequest().body(errorMsg.toString());
             }
 
-            if (userDTO.getPassword().equals(userDTO.getRetypePassword())) {
+            if (!userDTO.getPassword().equals(userDTO.getRetypePassword())) {
                 return ResponseEntity.badRequest().body("Passwords do not match");
             }
 
