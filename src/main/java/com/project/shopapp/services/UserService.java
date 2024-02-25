@@ -71,7 +71,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public String login(String phoneNumber, String password) throws Exception {
+    public String login(String phoneNumber, String password, Long roleId) throws Exception {
         Optional<User> optionalUser = userRepository.findByPhoneNumber(phoneNumber);
 
         if (optionalUser.isEmpty()) {
@@ -85,6 +85,16 @@ public class UserService implements IUserService {
             if (!passwordEncoder.matches(password, existingUser.getPassword())) {
                 throw new BadCredentialsException("Invalid phone number or password");
             }
+        }
+
+        Optional<Role> optionalRole = roleRepository.findById(roleId);
+
+        if (optionalRole.isEmpty()) {
+            throw new DataNotFoundException("Role not found");
+        }
+
+        if (optionalUser.get().isActive()) {
+            throw new DataNotFoundException("User is locked");
         }
 
         // authenticate with Java Spring Security

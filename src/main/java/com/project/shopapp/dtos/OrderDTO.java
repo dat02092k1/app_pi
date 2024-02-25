@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -48,4 +49,7 @@ public class OrderDTO {
 
     @JsonProperty("shipping_date")
     private LocalDate shippingDate;
+
+    @JsonProperty("cart_items")
+    private List<CartItemDTO> cartItems;
 }
