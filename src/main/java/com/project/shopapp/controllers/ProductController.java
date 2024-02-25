@@ -141,7 +141,7 @@ public class ProductController {
     ) {
         PageRequest pageRequest = PageRequest.of(page, limit, Sort.by("createdAt").descending());
 
-        Page<ProductResponse> productsPage = productService.getAllProducts(pageRequest);
+        Page<ProductResponse> productsPage = productService.getAllProducts(keyword, categoryId, pageRequest);
 
         int totalPages = productsPage.getTotalPages();
 
@@ -166,7 +166,7 @@ public class ProductController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteProductById(@PathVariable("id") Long productId) {
         try {
-             productService.deleteProduct(productId);
+            productService.deleteProduct(productId);
             return ResponseEntity.ok(String.format("Product %d deleted", productId));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -177,7 +177,7 @@ public class ProductController {
     public ResponseEntity<String> updateProduct(
             @PathVariable("id") Long productId,
             @RequestBody ProductDTO productDTO
-            ) {
+    ) {
         try {
             Product updatedProduct = productService.updateProduct(productId, productDTO);
             return ResponseEntity.ok(String.format("Product %d updated", updatedProduct.getId()));
@@ -186,7 +186,7 @@ public class ProductController {
         }
     }
 
-//    @PostMapping("/generateFakeProducts")
+    //    @PostMapping("/generateFakeProducts")
     private ResponseEntity<String> generateFakeProducts() {
         Faker faker = new Faker();
         for (int i = 0; i < 1_000_000; i++) {
@@ -206,8 +206,7 @@ public class ProductController {
 
             try {
                 productService.createProduct(productDTO);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 System.out.println(e.getMessage());
                 return ResponseEntity.badRequest().body(e.getMessage());
             }

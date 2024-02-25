@@ -47,7 +47,7 @@ public class WebSecurityConfig {
                                     .requestMatchers(HttpMethod.DELETE,
                                             String.format("%s/categories/**", apiPrefix)).hasRole(Role.ADMIN)
                                     .requestMatchers(HttpMethod.GET,
-                                            String.format("%s/products**", apiPrefix)).hasAnyRole(Role.USER, Role.ADMIN)
+                                            String.format("%s/products**", apiPrefix)).permitAll()
                                     .requestMatchers(HttpMethod.POST,
                                             String.format("%s/products/**", apiPrefix)).hasRole(Role.ADMIN)
                                     .requestMatchers(HttpMethod.PUT,
