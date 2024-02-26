@@ -9,9 +9,12 @@ import com.project.shopapp.repositories.OrderRepository;
 import com.project.shopapp.repositories.ProductRepository;
 import com.project.shopapp.repositories.UserRepository;
 import com.project.shopapp.responses.OrderResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.weaver.ast.Or;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -92,6 +95,7 @@ public class OrderService implements IOrderService{
     }
 
     @Override
+    @Transactional
     public OrderResponse updateOrder(Long orderId, OrderDTO orderDTO) throws DataNotFoundException {
         Order existingOrder = orderRepository.findById(orderId)
                 .orElseThrow(() -> new DataNotFoundException("Order with id " + orderId + " not found"));
@@ -113,6 +117,7 @@ public class OrderService implements IOrderService{
     }
 
     @Override
+    @Transactional
     public void deleteOrder(Long id) {
         Order optionalOrder = orderRepository.findById(id).orElse(null);
 
@@ -131,5 +136,13 @@ public class OrderService implements IOrderService{
         return orders.stream()
                 .map(order -> modelMapper.map(order, OrderResponse.class))
                 .toList();
+    }
+
+    @Override
+    public Page<OrderResponse> getOrdersByKeyword(String keyword, Pageable pageable) {
+        Page<Order> orders = orderRepository.findByKeyword(keyword, pageable);
+
+        modelMapper.typeMap(Order.class, OrderResponse.class);
+        return orders.map(order -> modelMapper.map(order, OrderResponse.class));
     }
 }

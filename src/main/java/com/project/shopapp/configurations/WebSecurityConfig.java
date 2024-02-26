@@ -8,8 +8,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
@@ -20,6 +22,8 @@ import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
+//@EnableWebSecurity(debug = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class WebSecurityConfig {
     private final JwtTokenFilter jwtTokenFilter;
@@ -64,6 +68,8 @@ public class WebSecurityConfig {
                                             String.format("%s/orders/**", apiPrefix)).hasRole(Role.ADMIN)
                                     .requestMatchers(HttpMethod.GET,
                                             String.format("%s/orders/**", apiPrefix)).hasAnyRole(Role.USER, Role.ADMIN)
+//                                    .requestMatchers(HttpMethod.GET,
+//                                            String.format("%s/get-orders-by-keyword", apiPrefix)).hasRole(Role.ADMIN)
                                     .requestMatchers(HttpMethod.POST,
                                             String.format("%s/orders/**", apiPrefix)).hasAnyRole(Role.USER)
                                     .requestMatchers(HttpMethod.DELETE,

@@ -2,11 +2,16 @@ package com.project.shopapp.controllers;
 
 import com.project.shopapp.dtos.OrderDTO;
 import com.project.shopapp.models.Order;
+import com.project.shopapp.responses.OrderListResponse;
 import com.project.shopapp.responses.OrderResponse;
 import com.project.shopapp.services.IOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -83,4 +88,17 @@ public class OrderController {
         return ResponseEntity.ok("Order deleted");
     }
 
+    @GetMapping("/get-orders-by-keyword")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<OrderListResponse> getOrdersByKeyword(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(value = "limit", required = false, defaultValue = "10") int limit
+    ) {
+        PageRequest pageRequest = PageRequest.of(page, limit, Sort.by("id").descending());
+
+            Page<OrderResponse> orders = orderService.getOrdersByKeyword(keyword, pageRequest);
+
+            return ResponseEntity.ok(new OrderListResponse(orders.getContent(), orders.getTotalPages()));
+    }
 }

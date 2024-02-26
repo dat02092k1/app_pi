@@ -97,7 +97,7 @@ public class UserService implements IUserService {
             throw new DataNotFoundException("Role not found");
         }
 
-        if (optionalUser.get().isActive()) {
+        if (!optionalUser.get().isActive()) {
             throw new DataNotFoundException("User is locked");
         }
 
