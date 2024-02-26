@@ -55,8 +55,8 @@ public class OrderController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getOrder(@Valid @PathVariable("id") Long id) {
         try {
-            OrderResponse orderResponse = orderService.getOrder(id);
-            return ResponseEntity.ok(orderResponse);
+            OrderResponse order = orderService.getOrder(id);
+            return ResponseEntity.ok(order);
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

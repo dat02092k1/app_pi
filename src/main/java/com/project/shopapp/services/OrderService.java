@@ -85,12 +85,10 @@ public class OrderService implements IOrderService{
 
     @Override
     public OrderResponse getOrder(Long id) {
-        Optional<Order> order = orderRepository.findById(id);
-        if (order.isPresent()) {
-            modelMapper.typeMap(Order.class, OrderResponse.class);
-            return modelMapper.map(order.get(), OrderResponse.class);
-        }
-        return null;
+        Order optionalOrder = orderRepository.findById(id).orElse(null);
+        modelMapper.typeMap(Order.class, OrderResponse.class);
+        return modelMapper.map(optionalOrder, OrderResponse.class);
+
     }
 
     @Override
