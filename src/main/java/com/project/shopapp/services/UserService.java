@@ -89,7 +89,7 @@ public class UserService implements IUserService {
 
         Optional<Role> optionalRole = roleRepository.findById(roleId);
 
-        if (optionalRole.isEmpty()) {
+        if (optionalRole.isEmpty() || !roleId.equals(existingUser.getRole().getId())) {
             throw new DataNotFoundException("Role not found");
         }
 
@@ -104,6 +104,23 @@ public class UserService implements IUserService {
 
         authenticationManager.authenticate(authenticationToken);
         return jwtTokenUtils.generateToken(existingUser);
+    }
+
+    @Override
+    public User getUserDetailsFromToken(String token) throws Exception {
+        if (jwtTokenUtils.isTokenExpired(token)) {
+            throw new Exception("Token is expired");
+        }
+
+        String phoneNumber = jwtTokenUtils.extractPhoneNumber(token);
+
+        Optional<User> user = userRepository.findByPhoneNumber(phoneNumber);
+
+        if (user.isEmpty()) {
+            throw new DataNotFoundException("User not found");
+        }
+
+        return user.get();
     }
 
 }

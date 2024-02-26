@@ -5,6 +5,7 @@ import com.project.shopapp.dtos.*;
 import com.project.shopapp.models.Role;
 import com.project.shopapp.models.User;
 import com.project.shopapp.responses.LoginResponse;
+import com.project.shopapp.responses.UserResponse;
 import com.project.shopapp.services.IUserService;
 import com.project.shopapp.utils.MessageKeys;
 import jakarta.servlet.http.HttpServlet;
@@ -15,10 +16,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
@@ -82,4 +80,16 @@ public class UserController {
         }
     }
 
+    @PostMapping("/details")
+    public ResponseEntity<UserResponse> getUserDetails(
+            @RequestHeader("Authorization") String token
+    ) {
+        try {
+            String extractedToken = token.substring(7);
+            User user = userService.getUserDetailsFromToken(extractedToken);
+            return ResponseEntity.ok(UserResponse.fromUser(user));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
 }
