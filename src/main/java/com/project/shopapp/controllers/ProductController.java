@@ -11,6 +11,8 @@ import com.project.shopapp.services.IProductService;
 import jakarta.validation.Path;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -37,6 +39,7 @@ import java.util.UUID;
 @RequestMapping("${api.prefix}/products")
 @RequiredArgsConstructor
 public class ProductController {
+    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
     private final IProductService productService;
 
     private String storeFile(MultipartFile file) throws IOException {
@@ -141,6 +144,7 @@ public class ProductController {
     ) {
         PageRequest pageRequest = PageRequest.of(page, limit, Sort.by("createdAt").descending());
 
+        logger.info(String.format("keyword: %s, categoryId: %d, page: %d, limit: %d", keyword, categoryId, page, limit));
         Page<ProductResponse> productsPage = productService.getAllProducts(keyword, categoryId, pageRequest);
 
         int totalPages = productsPage.getTotalPages();
