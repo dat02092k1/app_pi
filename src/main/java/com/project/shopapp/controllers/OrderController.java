@@ -69,13 +69,13 @@ public class OrderController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateOrder(
+    public ResponseEntity<?> updateOrder(
             @Valid @PathVariable("id") Long id,
             @Valid @RequestBody OrderDTO orderDTO
     ) {
         try {
             OrderResponse orderResponse = orderService.updateOrder(id, orderDTO);
-            return ResponseEntity.ok(orderResponse.toString());
+            return ResponseEntity.ok(orderResponse);
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

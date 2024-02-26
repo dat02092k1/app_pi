@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Table(name = "products")
 @Entity
@@ -31,4 +32,7 @@ public class Product extends BaseEntity {
     @ManyToOne // many products to one category
     @JoinColumn(name = "category_id") // foreign key
     private Category category;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductImage> productImages;
 }
