@@ -46,7 +46,7 @@ public class JwtTokenUtils {
         // properties => claims
         Map<String, Object> claims = new HashMap<>();
         claims.put("phoneNumber", user.getPhoneNumber());
-
+        claims.put("userId", user.getId());
         try {
             Date expirationDate = new Date(System.currentTimeMillis() + expiration * 1000L);
 

@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -82,12 +83,33 @@ public class UserController {
 
     @PostMapping("/details")
     public ResponseEntity<UserResponse> getUserDetails(
-            @RequestHeader("Authorization") String token
+            @RequestHeader("Authorization") String authorizationHeader
     ) {
         try {
-            String extractedToken = token.substring(7);
+            String extractedToken = authorizationHeader.substring(7);
             User user = userService.getUserDetailsFromToken(extractedToken);
             return ResponseEntity.ok(UserResponse.fromUser(user));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    @PutMapping("/details/{userId}")
+    public ResponseEntity<UserResponse> updateUserDetails(
+            @PathVariable Long userId,
+            @RequestBody UpdateUserDTO updateUserDTO,
+            @RequestHeader("Authorization") String authorizationHeader
+    ) {
+        try {
+            String extractedToken = authorizationHeader.substring(7);
+            User user = userService.getUserDetailsFromToken(extractedToken);
+
+            if (user.getId() != userId) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            User updateUser = userService.updateUser(userId, updateUserDTO);
+            return ResponseEntity.ok(UserResponse.fromUser(updateUser));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
         }
