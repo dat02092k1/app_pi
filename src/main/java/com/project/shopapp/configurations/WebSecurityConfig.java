@@ -4,6 +4,7 @@ import com.project.shopapp.filters.JwtTokenFilter;
 import com.project.shopapp.models.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -124,18 +125,19 @@ public class WebSecurityConfig {
                 })
                 .csrf(AbstractHttpConfigurer::disable);
 
-        http.cors(new Customizer<CorsConfigurer<HttpSecurity>>() {
-            @Override
-            public void customize(CorsConfigurer<HttpSecurity> httpSecurityCorsConfigurer) {
-                httpSecurityCorsConfigurer.configurationSource(request -> {
-                    var cors = new CorsConfiguration();
-                    cors.setAllowedOrigins(List.of("*"));
-                    cors.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-                    cors.setAllowedHeaders(List.of("*"));
-                    return cors;
-                });
-            }
-        });
+          http.securityMatcher(String.valueOf(EndpointRequest.toAnyEndpoint()));
+//        http.cors(new Customizer<CorsConfigurer<HttpSecurity>>() {
+//            @Override
+//            public void customize(CorsConfigurer<HttpSecurity> httpSecurityCorsConfigurer) {
+//                httpSecurityCorsConfigurer.configurationSource(request -> {
+//                    var cors = new CorsConfiguration();
+//                    cors.setAllowedOrigins(List.of("*"));
+//                    cors.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+//                    cors.setAllowedHeaders(List.of("*"));
+//                    return cors;
+//                });
+//            }
+//        });
 
         return http.build();
     }
