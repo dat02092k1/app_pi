@@ -20,6 +20,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 @RequiredArgsConstructor
@@ -64,8 +66,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             }
 
             filterChain.doFilter(request, response);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
         }
     }
@@ -75,21 +76,40 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 Pair.of(String.format("%s/products", apiPrefix), "GET"),
                 Pair.of(String.format("%s/categories", apiPrefix), "POST"),
                 Pair.of(String.format("%s/users/register", apiPrefix), "POST"),
-                Pair.of(String.format("%s/users/login", apiPrefix), "POST")
+                Pair.of(String.format("%s/users/login", apiPrefix), "POST"),
+                Pair.of(String.format("%s/health-check", apiPrefix), "GET"),
+//                Pair.of(String.format("%s/actuator/**", apiPrefix), "GET"),
+                // Swagger
+                Pair.of("/api-docs", "GET"),
+                Pair.of("/api-docs/**", "GET"),
+                Pair.of("/swagger-resources", "GET"),
+                Pair.of("/swagger-resources/**", "GET"),
+                Pair.of("/configuration/ui", "GET"),
+                Pair.of("/configuration/security", "GET"),
+                Pair.of("/swagger-ui/**", "GET"),
+                Pair.of("/swagger-ui.html", "GET"),
+                Pair.of("/swagger-ui/index.html", "GET")
         );
 
         String requestMethod = request.getMethod();
         String requestPath = request.getServletPath();
 
-        if (request.equals(String.format("%s/orders", apiPrefix))
-            && requestMethod.equals("GET")) {
-            // allow access to %s/orders
-            return true;
-        }
-
         for (Pair<String, String> bypassToken : bypassTokens) {
-            if (request.getServletPath().contains(bypassToken.getFirst()) &&
-                    request.getMethod().equals(bypassToken.getSecond())) {
+            String path = bypassToken.getFirst();
+            String method = bypassToken.getSecond();
+
+            if (path.contains("**")) {
+                // replace ** with .*
+                String regexPath = path.replace("**", ".*");
+                // create pattern to match the request path
+                Pattern pattern = Pattern.compile(regexPath);
+                Matcher matcher = pattern.matcher(requestPath);
+
+                if (matcher.matches() && requestMethod.equals(method)) {
+                    return true;
+                }
+            } else if (request.getServletPath().contains(path) &&
+                    request.getMethod().equals(method)) {
                 return true;
             }
         }

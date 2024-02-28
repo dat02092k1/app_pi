@@ -25,6 +25,7 @@ public class OrderController {
     final private IOrderService orderService;
 
     @PostMapping("")
+    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> createOrder(
             @RequestBody @Valid OrderDTO orderDTO,
             BindingResult result

@@ -38,7 +38,19 @@ public class WebSecurityConfig {
                     requests
                             .requestMatchers(
                                     String.format("%s/users/register", apiPrefix),
-                                    String.format("%s/users/login", apiPrefix)
+                                    String.format("%s/users/login", apiPrefix),
+                                    String.format("%s/healthcheck/**", apiPrefix),
+                                    String.format("%s/actuator/**", apiPrefix),
+                                    "/api-docs",
+                                    "/api-docs/**",
+                                    "/swagger-resources",
+                                    "/swagger-resources/**",
+                                    "/configuration/ui",
+                                    "/configuration/security",
+                                    "/swagger-ui/**",
+                                    "/swagger-ui.html",
+                                    "/webjars/swagger-ui/**",
+                                    "/swagger-ui/index.html"
                             )
                             .permitAll()
                             .requestMatchers(HttpMethod.GET,
@@ -77,8 +89,8 @@ public class WebSecurityConfig {
                             .requestMatchers(HttpMethod.DELETE,
                                     String.format("%s/products/**", apiPrefix)).hasAnyRole(Role.ADMIN)
 
-                            .requestMatchers(HttpMethod.POST,
-                                    String.format("%s/orders/**", apiPrefix)).hasAnyRole(Role.USER)
+//                            .requestMatchers(HttpMethod.POST,
+//                                    String.format("%s/orders/**", apiPrefix)).hasAnyRole(Role.USER)
 
                             .requestMatchers(HttpMethod.GET,
                                     String.format("%s/orders/**", apiPrefix)).permitAll()
@@ -102,8 +114,9 @@ public class WebSecurityConfig {
                                     String.format("%s/order_details/**", apiPrefix)).hasRole(Role.ADMIN)
 
                             .requestMatchers(HttpMethod.GET,
-                                    String.format("%s/healthcheck/**", apiPrefix)).permitAll()
-
+                                    String.format("%s/health-check**", apiPrefix)).permitAll()
+                            .requestMatchers(HttpMethod.GET,
+                                    String.format("%s/actuator/**", apiPrefix)).permitAll()
 
                             .anyRequest().authenticated();
                     //.anyRequest().permitAll();

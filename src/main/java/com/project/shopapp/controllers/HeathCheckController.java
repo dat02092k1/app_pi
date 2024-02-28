@@ -1,14 +1,13 @@
 package com.project.shopapp.controllers;
 
-import com.project.shopapp.models.Category;
 import com.project.shopapp.services.ICategoryService;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.boot.actuate.health.Health;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.net.InetAddress;
 
 @RestController
 @RequestMapping("${api.prefix}/health-check")
@@ -17,13 +16,13 @@ public class HeathCheckController {
     private final ICategoryService categoryService;
 
     @GetMapping("")
-    public ResponseEntity<?> healthCheck() {
+    public Health healthCheck() {
         try {
-            List<Category> categories = categoryService.getAllCategories();
-            return ResponseEntity.ok("ok");
+            String computerName = InetAddress.getLocalHost().getHostName();
+            return Health.up().withDetail("Computer Name", computerName).build();
         }
         catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return Health.down().withDetail("Error", e.getMessage()).build();
         }
     }
 }
