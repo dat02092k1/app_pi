@@ -3,7 +3,7 @@ server:
 spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/shopapp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
-    username: root  #root1 in xampp
+    username: root1  #root1 in xampp
     password: ${MYSQL_ROOT_PASSWORD:123456}
     driver-class-name: com.mysql.cj.jdbc.Driver
     jpa:
@@ -22,6 +22,11 @@ spring:
     basename: i18n/messages
     encoding: UTF-8
     default-locale: en
+  #flyway:
+  flyway:
+    locations: classpath:/db/migration,classpath:/dev/db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
   data:
     redis:
       host: ${REDIS_HOST:localhost}
