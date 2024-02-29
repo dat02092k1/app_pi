@@ -6,6 +6,7 @@ import com.project.shopapp.models.Role;
 import com.project.shopapp.models.User;
 import com.project.shopapp.responses.LoginResponse;
 import com.project.shopapp.responses.UserResponse;
+import com.project.shopapp.services.ITokenService;
 import com.project.shopapp.services.IUserService;
 import com.project.shopapp.utils.MessageKeys;
 import jakarta.servlet.http.HttpServlet;
@@ -30,6 +31,11 @@ import java.util.Locale;
 public class UserController {
     private final IUserService userService;
     private final LocalizationUtils localizationUtils;
+    private final ITokenService tokenService;
+
+    private boolean isMobileDevice(String userAgent) {
+        return userAgent.toLowerCase().contains("mobile");
+    }
 
     @PostMapping("/register")
     public ResponseEntity<?> createUser(
@@ -59,7 +65,8 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> loginUser(
-            @Valid @RequestBody UserLoginDTO userLoginDTO
+            @Valid @RequestBody UserLoginDTO userLoginDTO,
+            HttpServletRequest request
             ) {
         try {
             String token = userService.login(
@@ -67,6 +74,11 @@ public class UserController {
                     userLoginDTO.getPassword(),
                     userLoginDTO.getRoleId() == null ? 1 : userLoginDTO.getRoleId()
             );
+
+            String userAgent = request.getHeader("User-Agent");
+            User user = userService.getUserDetailsFromToken(token);
+
+            tokenService.addToken(user, token, isMobileDevice(userAgent));
 
             return ResponseEntity.ok(LoginResponse.builder()
                             .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESS))

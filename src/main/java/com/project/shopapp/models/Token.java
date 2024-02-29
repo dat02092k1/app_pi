@@ -30,6 +30,9 @@ public class Token {
     private boolean revoked;
     private boolean expired;
 
+    @Column(name = "is_mobile", columnDefinition = "TINYINT(1)")
+    private boolean isMobile;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
