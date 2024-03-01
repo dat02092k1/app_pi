@@ -28,7 +28,7 @@ public class FlywayConfig {
                 .dataSource(dataSource())
                 .locations(flywayLocations)
                 .baselineOnMigrate(true)
-                .baselineVersion("1")
+                .baselineVersion("2")
                 .load();
 
         flyway.migrate(); // run .sql file if version is newer

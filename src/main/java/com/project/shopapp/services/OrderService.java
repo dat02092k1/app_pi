@@ -33,6 +33,7 @@ public class OrderService implements IOrderService{
     private final ModelMapper modelMapper;
 
     @Override
+    @Transactional
     public OrderResponse createOrder(OrderDTO orderDTO) throws Exception {
         // check if user id in orderDTO exists in the database
         User user = userRepository.findById(orderDTO.getUserId())

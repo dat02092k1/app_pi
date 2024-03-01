@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @AllArgsConstructor
 @Data
 @Builder
@@ -16,4 +18,15 @@ public class LoginResponse {
 
     @JsonProperty("token")
     private String token;
+
+    @JsonProperty("refresh_token")
+    private String refreshToken;
+
+    private String tokenType = "Bearer";
+
+    private Long id;
+
+    private String username;
+
+    private List<String> roles;
 }
