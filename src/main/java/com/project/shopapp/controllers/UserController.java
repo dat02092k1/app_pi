@@ -3,6 +3,7 @@ package com.project.shopapp.controllers;
 import com.project.shopapp.components.LocalizationUtils;
 import com.project.shopapp.dtos.*;
 import com.project.shopapp.models.Role;
+import com.project.shopapp.models.Token;
 import com.project.shopapp.models.User;
 import com.project.shopapp.responses.LoginResponse;
 import com.project.shopapp.responses.UserResponse;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -78,16 +80,47 @@ public class UserController {
             String userAgent = request.getHeader("User-Agent");
             User user = userService.getUserDetailsFromToken(token);
 
-            tokenService.addToken(user, token, isMobileDevice(userAgent));
+            Token jwtToken = tokenService.addToken(user, token, isMobileDevice(userAgent));
 
             return ResponseEntity.ok(LoginResponse.builder()
                             .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESS))
-                            .token(token)
+                            .token(jwtToken.getToken())
+                            .tokenType(jwtToken.getTokenType())
+                            .refreshToken(jwtToken.getRefreshToken())
+                            .username(user.getUsername())
+                            .roles(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+                            .id(user.getId())
                     .build());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
                     LoginResponse.builder()
                             .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_FAILED, e.getMessage()))
+                            .build()
+            );
+        }
+    }
+
+    @PostMapping("/refreshToken")
+    public ResponseEntity<LoginResponse> refreshToken(
+            @Valid @RequestBody RefreshTokenDTO refreshTokenDTO
+    ) {
+        try {
+            User userDetails = userService.getUserDetailsFromRefreshToken(refreshTokenDTO.getRefreshToken());
+            Token jwtToken = tokenService.refreshToken(refreshTokenDTO.getRefreshToken(), userDetails);
+
+            return ResponseEntity.ok(LoginResponse.builder()
+                    .message(localizationUtils.getLocalizedMessage(MessageKeys.REFRESH_TOKEN_SUCCESS))
+                    .token(jwtToken.getToken())
+                    .tokenType(jwtToken.getTokenType())
+                    .refreshToken(jwtToken.getRefreshToken())
+                    .username(jwtToken.getUser().getUsername())
+                    .roles(jwtToken.getUser().getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+                    .id(jwtToken.getUser().getId())
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    LoginResponse.builder()
+                            .message(localizationUtils.getLocalizedMessage(MessageKeys.REFRESH_TOKEN_FAILED, e.getMessage()))
                             .build()
             );
         }

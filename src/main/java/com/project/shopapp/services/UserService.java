@@ -6,8 +6,10 @@ import com.project.shopapp.dtos.UserDTO;
 import com.project.shopapp.exceptions.DataNotFoundException;
 import com.project.shopapp.exceptions.PermissionDenyException;
 import com.project.shopapp.models.Role;
+import com.project.shopapp.models.Token;
 import com.project.shopapp.models.User;
 import com.project.shopapp.repositories.RoleRepository;
+import com.project.shopapp.repositories.TokenRepository;
 import com.project.shopapp.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ import java.util.Optional;
 public class UserService implements IUserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final TokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtils jwtTokenUtils;
     private final AuthenticationManager authenticationManager;
@@ -125,6 +128,12 @@ public class UserService implements IUserService {
         }
 
         return user.get();
+    }
+
+    @Override
+    public  User getUserDetailsFromRefreshToken(String refreshToken) throws Exception {
+        Token token = tokenRepository.findByRefreshToken(refreshToken);
+        return getUserDetailsFromToken(token.getToken());
     }
 
     @Override
