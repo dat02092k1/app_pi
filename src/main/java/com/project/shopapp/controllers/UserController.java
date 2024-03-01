@@ -2,10 +2,14 @@ package com.project.shopapp.controllers;
 
 import com.project.shopapp.components.LocalizationUtils;
 import com.project.shopapp.dtos.*;
+import com.project.shopapp.exceptions.DataNotFoundException;
+import com.project.shopapp.exceptions.InvalidPasswordException;
+import com.project.shopapp.exceptions.PermissionDenyException;
 import com.project.shopapp.models.Role;
 import com.project.shopapp.models.Token;
 import com.project.shopapp.models.User;
 import com.project.shopapp.responses.LoginResponse;
+import com.project.shopapp.responses.UserListResponse;
 import com.project.shopapp.responses.UserResponse;
 import com.project.shopapp.services.ITokenService;
 import com.project.shopapp.services.IUserService;
@@ -15,8 +19,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -24,8 +32,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("${api.prefix}/users")
@@ -38,6 +49,38 @@ public class UserController {
     private boolean isMobileDevice(String userAgent) {
         return userAgent.toLowerCase().contains("mobile");
     }
+
+    @GetMapping("")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> getAllUsers(
+            @RequestParam(defaultValue = "", required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        try {
+            PageRequest pageRequest = PageRequest.of(
+                    page, limit, Sort.by("id").ascending()
+            );
+
+            Page<UserResponse> users = userService
+                    .findAll(keyword, pageRequest)
+                    .map(UserResponse::fromUser);
+
+            int totalPages = users.getTotalPages();
+
+            List<UserResponse> userResponses = users.getContent();
+
+            return ResponseEntity.ok(
+                    UserListResponse.builder()
+                            .users(userResponses)
+                            .totalPages(totalPages)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 
     @PostMapping("/register")
     public ResponseEntity<?> createUser(
@@ -69,7 +112,7 @@ public class UserController {
     public ResponseEntity<LoginResponse> loginUser(
             @Valid @RequestBody UserLoginDTO userLoginDTO,
             HttpServletRequest request
-            ) {
+    ) {
         try {
             String token = userService.login(
                     userLoginDTO.getPhoneNumber(),
@@ -83,13 +126,13 @@ public class UserController {
             Token jwtToken = tokenService.addToken(user, token, isMobileDevice(userAgent));
 
             return ResponseEntity.ok(LoginResponse.builder()
-                            .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESS))
-                            .token(jwtToken.getToken())
-                            .tokenType(jwtToken.getTokenType())
-                            .refreshToken(jwtToken.getRefreshToken())
-                            .username(user.getUsername())
-                            .roles(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
-                            .id(user.getId())
+                    .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESS))
+                    .token(jwtToken.getToken())
+                    .tokenType(jwtToken.getTokenType())
+                    .refreshToken(jwtToken.getRefreshToken())
+                    .username(user.getUsername())
+                    .roles(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+                    .id(user.getId())
                     .build());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
@@ -157,6 +200,45 @@ public class UserController {
             return ResponseEntity.ok(UserResponse.fromUser(updateUser));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    @PutMapping("/resetPassword/{userId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> resetPassword(
+            @Valid @PathVariable long userId
+    ) {
+        try {
+            String newPassword = UUID.randomUUID().toString().substring(0, 5); // Tạo mật khẩu mới
+            userService.resetPassword(userId, newPassword);
+            return ResponseEntity.ok(newPassword);
+        } catch (InvalidPasswordException e) {
+            return ResponseEntity.badRequest().body("Invalid password");
+        } catch (DataNotFoundException e) {
+            return ResponseEntity.badRequest().body("User not found");
+
+        } catch (PermissionDenyException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/block/{userId}/{active}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<String> resetPassword(
+            @Valid @PathVariable long userId,
+            @Valid @PathVariable int active
+    ) {
+        try {
+            userService.blockOrEnable(userId, active > 0);
+            String message = active > 0 ? "Successfully enabled the user." : "Successfully blocked the user.";
+
+            return ResponseEntity.ok(message);
+        } catch (DataNotFoundException e) {
+            return ResponseEntity.badRequest().body("User not found");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

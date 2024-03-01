@@ -1,7 +1,9 @@
 package com.project.shopapp.components;
 
 import com.project.shopapp.exceptions.InvalidParamException;
+import com.project.shopapp.models.Token;
 import com.project.shopapp.models.User;
+import com.project.shopapp.repositories.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -28,6 +30,8 @@ public class JwtTokenUtils {
     private int expiration;
     @Value("${jwt.secretKey}")
     private String secretKey;
+
+    private final TokenRepository tokenRepository;
 
     private Date getDateTime() {
         Calendar calendar = Calendar.getInstance();
@@ -102,8 +106,17 @@ public class JwtTokenUtils {
         return this.extractClaim(token, Claims::getSubject);
     }
 
-    public boolean validateToken(String token, UserDetails userDetails) {
+    public boolean validateToken(String token, User userDetails) {
         final String phoneNumber = this.extractPhoneNumber(token);
+        Token existingToken = tokenRepository.findByToken(token);
+
+        if (existingToken == null
+                || existingToken.isRevoked()
+                || !userDetails.isActive()
+        ) {
+            return false;
+        }
+
         return (phoneNumber.equals(userDetails.getUsername()) && !this.isTokenExpired(token));
     }
 }

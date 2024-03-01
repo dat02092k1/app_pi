@@ -4,6 +4,7 @@ import com.project.shopapp.components.JwtTokenUtils;
 import com.project.shopapp.dtos.UpdateUserDTO;
 import com.project.shopapp.dtos.UserDTO;
 import com.project.shopapp.exceptions.DataNotFoundException;
+import com.project.shopapp.exceptions.InvalidPasswordException;
 import com.project.shopapp.exceptions.PermissionDenyException;
 import com.project.shopapp.models.Role;
 import com.project.shopapp.models.Token;
@@ -14,12 +15,15 @@ import com.project.shopapp.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -134,6 +138,43 @@ public class UserService implements IUserService {
     public  User getUserDetailsFromRefreshToken(String refreshToken) throws Exception {
         Token token = tokenRepository.findByRefreshToken(refreshToken);
         return getUserDetailsFromToken(token.getToken());
+    }
+
+    @Override
+    public Page<User> findAll(String keyword, Pageable pageable) throws Exception {
+        return userRepository.findAll(keyword, pageable);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(Long userId, String newPassword) throws InvalidPasswordException, DataNotFoundException, PermissionDenyException {
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("User not found"));
+
+        if (existingUser.getRole().getId() == 2) {
+            throw new PermissionDenyException("Can not reset password for admin account");
+        }
+
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        existingUser.setPassword(encodedPassword);
+        userRepository.save(existingUser);
+
+        List<Token> tokens = tokenRepository.findByUser(existingUser);
+        tokenRepository.deleteAll(tokens);
+    }
+
+    @Override
+    @Transactional
+    public void blockOrEnable(Long userId, Boolean active) throws DataNotFoundException, PermissionDenyException {
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("User not found"));
+
+        if (existingUser.getRole().getId() == 2) {
+            throw new PermissionDenyException("Can not block or enable admin account");
+        }
+
+        existingUser.setActive(active);
+        userRepository.save(existingUser);
     }
 
     @Override
