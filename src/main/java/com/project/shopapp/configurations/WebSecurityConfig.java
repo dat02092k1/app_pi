@@ -42,6 +42,8 @@ public class WebSecurityConfig {
                                     String.format("%s/users/login", apiPrefix),
                                     String.format("%s/healthcheck/**", apiPrefix),
                                     String.format("%s/actuator/**", apiPrefix),
+                                    String.format("%s/coupons**", apiPrefix),
+                                    "/v3/api-docs",
                                     "/api-docs",
                                     "/api-docs/**",
                                     "/swagger-resources",
@@ -89,7 +91,8 @@ public class WebSecurityConfig {
 
                             .requestMatchers(HttpMethod.DELETE,
                                     String.format("%s/products/**", apiPrefix)).hasAnyRole(Role.ADMIN)
-
+//                            .requestMatchers(HttpMethod.GET,
+//                                    String.format("%s/coupons**", apiPrefix)).permitAll()
 //                            .requestMatchers(HttpMethod.POST,
 //                                    String.format("%s/orders/**", apiPrefix)).hasAnyRole(Role.USER)
 
