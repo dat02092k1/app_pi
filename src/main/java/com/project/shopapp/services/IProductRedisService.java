@@ -1,7 +1,7 @@
 package com.project.shopapp.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.project.shopapp.responses.ProductResponse;
+import com.project.shopapp.responses.product.ProductResponse;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;

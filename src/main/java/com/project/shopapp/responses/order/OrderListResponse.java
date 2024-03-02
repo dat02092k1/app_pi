@@ -1,6 +1,5 @@
-package com.project.shopapp.responses;
+package com.project.shopapp.responses.order;
 
-import com.project.shopapp.models.Order;
 import lombok.*;
 
 import java.util.List;

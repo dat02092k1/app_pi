@@ -1,9 +1,8 @@
 package com.project.shopapp.controllers;
 
 import com.project.shopapp.dtos.OrderDTO;
-import com.project.shopapp.models.Order;
-import com.project.shopapp.responses.OrderListResponse;
-import com.project.shopapp.responses.OrderResponse;
+import com.project.shopapp.responses.order.OrderListResponse;
+import com.project.shopapp.responses.order.OrderResponse;
 import com.project.shopapp.services.IOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

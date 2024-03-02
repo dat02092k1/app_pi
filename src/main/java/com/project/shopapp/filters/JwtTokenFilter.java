@@ -79,6 +79,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 Pair.of(String.format("%s/users/login", apiPrefix), "POST"),
                 Pair.of(String.format("%s/users/refreshToken", apiPrefix), "POST"),
                 Pair.of(String.format("%s/health-check", apiPrefix), "GET"),
+                Pair.of(String.format("%s/coupons**", apiPrefix), "GET"),
 //                Pair.of(String.format("%s/actuator/**", apiPrefix), "GET"),
                 // Swagger
                 Pair.of("/api-docs", "GET"),
@@ -99,18 +100,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             String path = bypassToken.getFirst();
             String method = bypassToken.getSecond();
 
-            if (path.contains("**")) {
-                // replace ** with .*
-                String regexPath = path.replace("**", ".*");
-                // create pattern to match the request path
-                Pattern pattern = Pattern.compile(regexPath);
-                Matcher matcher = pattern.matcher(requestPath);
-
-                if (matcher.matches() && requestMethod.equals(method)) {
-                    return true;
-                }
-            } else if (request.getServletPath().contains(path) &&
-                    request.getMethod().equals(method)) {
+            if (requestPath.matches(".*" + path.replace("**", ".*") + ".*")
+                    && requestMethod.equalsIgnoreCase(method)) {
                 return true;
             }
         }

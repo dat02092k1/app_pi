@@ -1,7 +1,8 @@
-package com.project.shopapp.responses;
+package com.project.shopapp.responses.order;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.project.shopapp.models.OrderDetail;
+import com.project.shopapp.responses.BaseResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +16,7 @@ import java.util.List;
 @Data
 @Builder
 @NoArgsConstructor
-public class OrderResponse extends BaseResponse{
+public class OrderResponse extends BaseResponse {
     private Long id;
 
     @JsonProperty("user_id")
