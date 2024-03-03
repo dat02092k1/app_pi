@@ -50,7 +50,7 @@ public class CategoryService implements ICategoryService {
 
     @Override
     @Transactional
-    public void deleteCategory(Long id) {
+    public void deleteCategory(Long id) throws Exception {
         categoryRepository.deleteById(id);
     }
 }

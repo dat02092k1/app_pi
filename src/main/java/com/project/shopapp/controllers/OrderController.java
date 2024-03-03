@@ -1,6 +1,7 @@
 package com.project.shopapp.controllers;
 
 import com.project.shopapp.dtos.order.OrderDTO;
+import com.project.shopapp.responses.ResponseObject;
 import com.project.shopapp.responses.order.OrderListResponse;
 import com.project.shopapp.responses.order.OrderResponse;
 import com.project.shopapp.services.order.IOrderService;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
@@ -25,47 +27,57 @@ public class OrderController {
 
     @PostMapping("")
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> createOrder(
+    public ResponseEntity<ResponseObject> createOrder(
             @RequestBody @Valid OrderDTO orderDTO,
             BindingResult result
-    ) {
-        try {
+    ) throws Exception {
             if (result.hasErrors()) {
                 List<String> errorMsg = result.getFieldErrors()
                         .stream()
                         .map(FieldError::getDefaultMessage)
                         .toList();
-                return ResponseEntity.badRequest().body(errorMsg.toString());
+                return ResponseEntity.badRequest().body(
+                        ResponseObject.builder()
+                                .message(errorMsg.toString())
+                                .status(HttpStatus.BAD_REQUEST)
+                                .build()
+                );
             }
 
             OrderResponse orderResponse = orderService.createOrder(orderDTO);
 
-            return ResponseEntity.ok(orderResponse);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .message("Order created")
+                            .status(HttpStatus.OK)
+                            .data(orderResponse)
+                            .build()
+            );
+
     }
 
     @GetMapping("/users/{user_id}")
-    public ResponseEntity<?> getOrders(@Valid @PathVariable("user_id") Long userId) {
-        try {
+    public ResponseEntity<ResponseObject> getOrders(@Valid @PathVariable("user_id") Long userId) {
             List<OrderResponse> orders = orderService.findByUserId(userId);
-            return ResponseEntity.ok(orders);
-        }
-        catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .data(orders)
+                            .status(HttpStatus.OK)
+                            .message("Orders retrieved")
+                            .build()
+            );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getOrder(@Valid @PathVariable("id") Long id) {
-        try {
+    public ResponseEntity<ResponseObject> getOrder(@Valid @PathVariable("id") Long id) {
             OrderResponse order = orderService.getOrder(id);
-            return ResponseEntity.ok(order);
-        }
-        catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .data(order)
+                            .status(HttpStatus.OK)
+                            .message("Order retrieved")
+                            .build()
+            );
     }
 
     @PutMapping("/{id}")

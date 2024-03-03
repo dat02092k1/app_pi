@@ -14,5 +14,5 @@ public interface ICategoryService {
 
     Category updateCategory(Long categoryId, CategoryDTO categoryDTO);
 
-    void deleteCategory(Long id);
+    void deleteCategory(Long id) throws Exception;
 }

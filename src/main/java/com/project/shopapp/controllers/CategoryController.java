@@ -3,10 +3,12 @@ package com.project.shopapp.controllers;
 import com.project.shopapp.components.LocalizationUtils;
 import com.project.shopapp.dtos.category.CategoryDTO;
 import com.project.shopapp.models.Category;
+import com.project.shopapp.responses.ResponseObject;
 import com.project.shopapp.responses.category.UpdateCategoryResponse;
 import com.project.shopapp.services.category.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -51,24 +53,42 @@ public class CategoryController {
         return ResponseEntity.ok(categories);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseObject> getCategoryById(@PathVariable("id") Long id) {
+        Category category = categoryService.getCategoryById(id);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .data(category)
+                        .message("Category retrieved")
+                        .build());
+    }
+
     @PutMapping("/{id}")
-    public ResponseEntity<UpdateCategoryResponse> updateCategory(
+    public ResponseEntity<ResponseObject> updateCategory(
             @PathVariable("id") Long id,
             @Valid @RequestBody CategoryDTO categoryDTO
             ) {
-        categoryService.updateCategory(id, categoryDTO);
+        Category category = categoryService.updateCategory(id, categoryDTO);
 
         return ResponseEntity.ok(
-                UpdateCategoryResponse.builder()
-                        .message(localizationUtils.getLocalizedMessage("category.update_category.success"))
+                ResponseObject.builder()
+                        .message("Category updated successfully")
+                        .status(HttpStatus.OK)
+                        .data(category)
                         .build()
         );
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteCategory(@PathVariable("id") Long id) {
+    public ResponseEntity<ResponseObject> deleteCategory(@PathVariable("id") Long id) throws Exception {
         categoryService.deleteCategory(id);
 
-        return ResponseEntity.ok("Category deleted");
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Category deleted successfully")
+                        .build()
+        );
     }
 }

@@ -1,11 +1,14 @@
 package com.project.shopapp.controllers;
 
 import com.project.shopapp.dtos.order_detail.OrderDetailDTO;
+import com.project.shopapp.exceptions.DataNotFoundException;
 import com.project.shopapp.models.OrderDetail;
+import com.project.shopapp.responses.ResponseObject;
 import com.project.shopapp.responses.order.OrderDetailResponse;
 import com.project.shopapp.services.order_detail.IOrderDetailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -20,25 +23,34 @@ public class OrderDetailsController {
     private final IOrderDetailService orderDetailService;
 
     @PostMapping("")
-    public ResponseEntity<?> createOrderDetail(
+    public ResponseEntity<ResponseObject> createOrderDetail(
             @Valid @RequestBody OrderDetailDTO orderDetailsDTO,
             BindingResult result
-    ) {
+    ) throws Exception {
         if (result.hasErrors()) {
             List<String> errorMsg = result.getFieldErrors()
                     .stream()
                     .map(FieldError::getDefaultMessage)
                     .toList();
-            return ResponseEntity.badRequest().body(errorMsg.toString());
+            return ResponseEntity.badRequest().body(
+                    ResponseObject.builder()
+                            .status(HttpStatus.BAD_REQUEST)
+                            .message(errorMsg.toString())
+                            .data(null)
+                            .build()
+            );
         }
 
-        try {
             OrderDetailResponse orderDetailResponse = orderDetailService.createOrderDetail(orderDetailsDTO);
 
-            return ResponseEntity.ok().body(orderDetailResponse);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+            return ResponseEntity.ok().body(
+                    ResponseObject.builder()
+                            .status(HttpStatus.CREATED)
+                            .message("Order detail created")
+                            .data(orderDetailResponse)
+                            .build()
+            );
+
     }
 
     @GetMapping("/{id}")
@@ -61,17 +73,19 @@ public class OrderDetailsController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateOrderDetails(
+    public ResponseEntity<ResponseObject> updateOrderDetails(
             @Valid @PathVariable("id") Long id,
             @RequestBody OrderDetailDTO orderDetailsDTO
-    ) {
-        try {
+    ) throws DataNotFoundException, Exception {
             OrderDetail orderDetail = orderDetailService.updateOrderDetail(id, orderDetailsDTO);
-            return ResponseEntity.ok(OrderDetailResponse.fromOrderDetail(orderDetail));
-        }
-        catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .status(HttpStatus.OK)
+                            .message("Order detail updated")
+                            .data(OrderDetailResponse.fromOrderDetail(orderDetail))
+                            .build()
+            );
+
     }
 
     @DeleteMapping("/{id}")
