@@ -1,8 +1,8 @@
 package com.project.shopapp.controllers;
 
 import com.project.shopapp.models.ProductImage;
-import com.project.shopapp.services.IProductImageService;
-import com.project.shopapp.services.ProductService;
+import com.project.shopapp.services.product_image.IProductImageService;
+import com.project.shopapp.services.product.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -1,7 +1,10 @@
 package com.project.shopapp.controllers;
 
 import com.project.shopapp.components.LocalizationUtils;
-import com.project.shopapp.dtos.*;
+import com.project.shopapp.dtos.token.RefreshTokenDTO;
+import com.project.shopapp.dtos.user.UpdateUserDTO;
+import com.project.shopapp.dtos.user.UserDTO;
+import com.project.shopapp.dtos.user.UserLoginDTO;
 import com.project.shopapp.exceptions.DataNotFoundException;
 import com.project.shopapp.exceptions.InvalidPasswordException;
 import com.project.shopapp.exceptions.PermissionDenyException;
@@ -10,8 +13,8 @@ import com.project.shopapp.models.User;
 import com.project.shopapp.responses.user.LoginResponse;
 import com.project.shopapp.responses.user.UserListResponse;
 import com.project.shopapp.responses.user.UserResponse;
-import com.project.shopapp.services.ITokenService;
-import com.project.shopapp.services.IUserService;
+import com.project.shopapp.services.token.ITokenService;
+import com.project.shopapp.services.user.IUserService;
 import com.project.shopapp.utils.MessageKeys;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;

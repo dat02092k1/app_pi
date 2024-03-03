@@ -2,14 +2,14 @@ package com.project.shopapp.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.javafaker.Faker;
-import com.project.shopapp.dtos.ProductDTO;
-import com.project.shopapp.dtos.ProductImageDTO;
+import com.project.shopapp.dtos.product.ProductDTO;
+import com.project.shopapp.dtos.product.ProductImageDTO;
 import com.project.shopapp.models.Product;
 import com.project.shopapp.models.ProductImage;
 import com.project.shopapp.responses.product.ProductListResponse;
 import com.project.shopapp.responses.product.ProductResponse;
-import com.project.shopapp.services.IProductRedisService;
-import com.project.shopapp.services.IProductService;
+import com.project.shopapp.services.product.IProductRedisService;
+import com.project.shopapp.services.product.IProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;

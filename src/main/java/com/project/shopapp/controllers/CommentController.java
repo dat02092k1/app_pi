@@ -1,9 +1,9 @@
 package com.project.shopapp.controllers;
 
-import com.project.shopapp.dtos.CommentDTO;
+import com.project.shopapp.dtos.comment.CommentDTO;
 import com.project.shopapp.models.User;
 import com.project.shopapp.responses.comment.CommentResponse;
-import com.project.shopapp.services.ICommentService;
+import com.project.shopapp.services.comment.ICommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

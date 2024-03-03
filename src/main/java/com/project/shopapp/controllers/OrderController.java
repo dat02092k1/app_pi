@@ -1,9 +1,9 @@
 package com.project.shopapp.controllers;
 
-import com.project.shopapp.dtos.OrderDTO;
+import com.project.shopapp.dtos.order.OrderDTO;
 import com.project.shopapp.responses.order.OrderListResponse;
 import com.project.shopapp.responses.order.OrderResponse;
-import com.project.shopapp.services.IOrderService;
+import com.project.shopapp.services.order.IOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
