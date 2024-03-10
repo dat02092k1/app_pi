@@ -31,6 +31,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @RestController
@@ -178,6 +179,7 @@ public class UserController {
     }
 
     @PutMapping("/details/{userId}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     public ResponseEntity<UserResponse> updateUserDetails(
             @PathVariable Long userId,
             @RequestBody UpdateUserDTO updateUserDTO,
@@ -187,7 +189,9 @@ public class UserController {
             String extractedToken = authorizationHeader.substring(7);
             User user = userService.getUserDetailsFromToken(extractedToken);
 
-            if (user.getId() != userId) {
+            if (!Objects.equals(user.getId(), userId) &&
+                    (user.getRole().getId() != 2)
+            ) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
@@ -236,4 +240,18 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getMe(
+            @RequestHeader("Authorization") String authorizationHeader
+    ) {
+        try {
+            String extractedToken = authorizationHeader.substring(7);
+            User user = userService.getUserDetailsFromToken(extractedToken);
+            return ResponseEntity.ok(UserResponse.fromUser(user));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
 }

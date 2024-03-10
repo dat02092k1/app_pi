@@ -21,6 +21,9 @@ public class UserResponse {
     @JsonProperty("name")
     private String name;
 
+    @JsonProperty("fullname")
+    private String fullName;
+
     @JsonProperty("phone_number")
     private String phoneNumber;
 
@@ -46,6 +49,7 @@ public class UserResponse {
         return UserResponse.builder()
                 .id(user.getId())
                 .name(user.getFullName())
+                .fullName(user.getFullName())
                 .phoneNumber(user.getPhoneNumber())
                 .address(user.getAddress())
                 .role(user.getRole())
