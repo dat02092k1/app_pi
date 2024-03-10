@@ -1,6 +1,7 @@
 package com.project.shopapp.controllers;
 
 import com.project.shopapp.components.LocalizationUtils;
+import com.project.shopapp.components.converters.CategoryMessageConverter;
 import com.project.shopapp.dtos.category.CategoryDTO;
 import com.project.shopapp.models.Category;
 import com.project.shopapp.responses.ResponseObject;
@@ -10,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +26,7 @@ import java.util.List;
 public class CategoryController {
     private final CategoryService categoryService;
     private final LocalizationUtils localizationUtils;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @PostMapping("")
     public ResponseEntity<?> createCategory(
@@ -38,7 +41,11 @@ public class CategoryController {
             return ResponseEntity.badRequest().body(errorMsg.toString());
         }
 
-        categoryService.createCategory(categoryDTO);
+        Category category = categoryService.createCategory(categoryDTO);
+
+        this.kafkaTemplate.send("insert-a-category", category); // produce a message to the topic: producer
+
+        kafkaTemplate.setMessageConverter(new CategoryMessageConverter());
 
         return ResponseEntity.ok("Inserted category");
     }
@@ -50,6 +57,8 @@ public class CategoryController {
             @RequestParam("limit") int limit
     ) {
         List<Category> categories = categoryService.getAllCategories();
+        kafkaTemplate.send("get-all-categories", categories); // produce a message to the topic: producer
+
         return ResponseEntity.ok(categories);
     }
 
